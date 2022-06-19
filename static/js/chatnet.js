@@ -569,9 +569,9 @@ function getActiveInfo(user_show=false, load_panel=true){
                     var country = ``;
 
                     if (SETTINGS.display_name_format == 'username') {
-                    	var display_name = obj.user_name;
+                    	var display_name = obj.member_name;
                     }else{
-                    	var display_name = obj.first_name + ' ' + obj.last_name;
+                    	var display_name = obj.member_truename ?? obj.member_name;
                     }
 
                     var img_src = getUserAvatar(obj, display_name);

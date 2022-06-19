@@ -144,7 +144,7 @@
                             <div class="user-avatar">
                                 <div class="current-status online-status {{ USER.user_status_class }}"><i class="fa fa-circle"></i></div>
                                 {% if condition %}{% endif %}
-                                <img class="img-profile mr-2" src="{{USER.avatar_url}}">
+                                <img class="img-profile mr-2" src="{% if USER.avatar_url %}{{USER.avatar_url}}{% else %}{{STATIC_URL}}/img/user.png{% endif %}">
                             </div>
                             <span class="bottom-username">
                                 {% if IS_AUTHENTICATED %}

@@ -35,6 +35,7 @@ class Auth
                     app('db')->where('id', $user['member_id']);
                     $user_data = app('db')->getOne('user_extend');
                     $user = array_merge($user, $user_data);
+                    $user['avatar_url'] = getUserAvatarURL($user);
                     $this->updateLastLogin($user['member_id']);
                     $_SESSION['user'] = $user;
                     if(DISABLE_MULTIPLE_SESSIONS){
@@ -67,7 +68,7 @@ class Auth
         }
     }
 
-    private function get_member($id) {
+    public function get_member($id) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=get_member");
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -475,7 +476,7 @@ class Auth
             $user_data = app('db')->getOne('user_extend');
 
             $user = array_merge($user, $user_data);
-
+            $user['avatar_url'] = getUserAvatarURL($user);
             $user['user_status_class'] = "";
             if ($user['user_status'] == 1) {
                 $user['user_status_class'] = "online";
