@@ -498,7 +498,9 @@ CREATE TABLE IF NOT EXISTS `cn_notifications`(
     KEY `cn_notifications_idx_user_id_is_read` (`user_id`,`is_read`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- SENG ADD
+--
+-- Table structure for table `cn_user_extend`
+--
 
 CREATE TABLE IF NOT EXISTS `cn_user_extend`(
     `id` INT NOT NULL,
@@ -513,7 +515,7 @@ CREATE TABLE IF NOT EXISTS `cn_user_extend`(
     PRIMARY KEY(`id`),
     KEY `cn_users_idx_id` (`id`),
     KEY `cn_users_idx_user_type` (`user_type`)
-)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 COMMIT;
 
