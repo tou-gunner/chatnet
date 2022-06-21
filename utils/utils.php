@@ -953,7 +953,7 @@ function get_login_page(){
             $data['admin_login'] = true;		
         }
     }
-    echo app('twig')->render('phone_login.html', $data);
+    echo app('twig')->render('login.html', $data);
 
 }
 
@@ -1327,6 +1327,7 @@ function get_default_term($term){
 }
 
 function getUserAvatarURL($user_data){
+    $avatar_url = URL."static/img/user.png";
     if($user_data){
         // if ($user_data['avatar']) {
         //     if (!filter_var($user_data['avatar'], FILTER_VALIDATE_URL) === false) {
@@ -1348,10 +1349,16 @@ function getUserAvatarURL($user_data){
         if ($user_data['member_avatar'] && !empty($user_data['member_avatar'])) {
             $avatar_url = 'https://alomall.la/demo/system/upfiles/shop/avatar/'.$user_data['member_avatar'];
         } else {
-            $avatar_url = URL."static/img/user.png";
+            if ($user_data['user_type'] == 3) {
+                $avatar_url = URL."static/img/user.png";
+            }else{
+                if(preg_match('/^[A-Za-z]/', $user_data['member_name'])){
+                    $avatar_url = URL."static/img/letters/".strtoupper($user_data['member_name'][0]).'.svg';
+                }else{
+                    $avatar_url = URL."static/img/user.png";
+                }
+            }
         }
-    }else{
-        $avatar_url = URL."static/img/user.png";
     }
     return $avatar_url;
 }

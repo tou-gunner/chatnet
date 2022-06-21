@@ -1031,7 +1031,7 @@ function createMessage(obj, direction="down", save_message=false, decode=true){
         if (SETTINGS.display_name_format == 'username') {
         	var display_name = obj.member_name;
         }else{
-        	var display_name = obj.first_name + ' ' + obj.last_name;
+        	var display_name = obj.member_truename ?? obj.member_name;
         }
         if(obj.chat_type == "group"){
             start_chat = true;
@@ -1800,9 +1800,9 @@ function chatSearch(){
                         var res_name = 'You';
                     }else{
                         if (SETTINGS.display_name_format == 'username') {
-                        	var display_name = obj.user_name;
+                        	var display_name = obj.member_name;
                         }else{
-                        	var display_name = obj.first_name;
+                            var display_name = obj.member_truename ?? obj.member_name;
                         }
                         var res_name = display_name;
                     }
@@ -1960,9 +1960,9 @@ function createOnlineUser(obj){
             var last_msg = "<i class='fa fa-code'></i> "+code_lang+" {{_('code')}}";
         }else{
             if (SETTINGS.display_name_format == 'username') {
-            	var display_name = obj.user_name;
+            	var display_name = obj.member_name;
             }else{
-            	var display_name = obj.first_name;
+                var display_name = obj.member_truename ?? obj.member_name;
             }
             last_msg = "{{_('Say hi to')}} " + display_name ;
         }
@@ -1997,9 +1997,9 @@ function createOnlineUser(obj){
     }
 
     if (SETTINGS.display_name_format == 'username') {
-        var display_name = obj.user_name;
+        var display_name = obj.member_name;
     }else{
-        var display_name = obj.first_name + ' ' + obj.last_name;
+        var display_name = obj.member_truename ?? obj.member_name;
     }
 
     var img_src = getUserAvatar(obj, display_name);
@@ -2108,9 +2108,9 @@ function createForwardUser(obj){
     }
 
     if (SETTINGS.display_name_format == 'username') {
-        var display_name = obj.user_name;
+        var display_name = obj.member_name;
     }else{
-        var display_name = obj.first_name + ' ' + obj.last_name;
+        var display_name = obj.member_truename ?? obj.member_name;
     }
 
     var img_src = getUserAvatar(obj, display_name);
@@ -2554,11 +2554,11 @@ function isUrl(s) {
 }
 
 function getUserAvatar(obj, display_name){
-    if(obj.avatar) {
-        if(isUrl(obj.avatar)){
-            var img_src = obj.avatar;
+    if(obj.avatar_url) {
+        if(isUrl(obj.avatar_url)){
+            var img_src = obj.avatar_url;
         }else{
-            var img_src = "{{MEDIA_URL}}/avatars/"+obj.avatar;
+            var img_src = "{{MEDIA_URL}}/avatars/"+obj.avatar_url;
         }
     }else if(display_name && (/[a-zA-Z]/).test(display_name.charAt(0))){
         if( obj.user_type == 3) {

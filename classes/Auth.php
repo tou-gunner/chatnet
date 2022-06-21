@@ -115,6 +115,67 @@ class Auth
         }
     }
 
+    public function password_authenticate($phone, $password)
+    {
+        $ch_verifyOtp = curl_init();
+        curl_setopt($ch_verifyOtp, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=login");
+        curl_setopt($ch_verifyOtp, CURLOPT_POST, 1);
+        curl_setopt($ch_verifyOtp, CURLOPT_POSTFIELDS, 
+                 http_build_query(array(
+                    'phoneNumber' => "$phone", 
+                    'password' => "$password"
+                ))
+            );
+        curl_setopt($ch_verifyOtp, CURLOPT_RETURNTRANSFER, true);
+        $otpOutput = json_decode(curl_exec($ch_verifyOtp), true);
+        curl_close($ch_verifyOtp);
+        if ($otpOutput && $otpOutput['code'] == 200) {
+            $token = $otpOutput['datas'];
+            $ch_verifyToken = curl_init();
+            curl_setopt($ch_verifyToken, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=verify_token");
+            curl_setopt($ch_verifyToken, CURLOPT_POST, 1);
+            curl_setopt($ch_verifyToken, CURLOPT_POSTFIELDS, 
+                     http_build_query(array(
+                        'accessToken' => "$token"
+                    ))
+                );
+            curl_setopt($ch_verifyToken, CURLOPT_RETURNTRANSFER, true);
+            $member_output = json_decode(curl_exec($ch_verifyToken), true);
+            curl_close($ch_verifyToken);
+            if ($member_output['code'] == 200) {
+                $user = $member_output['datas'];
+    
+                app('db')->where('id', $user['member_id']);
+                $user_data = app('db')->getOne('user_extend');
+                if ($user_data == null) {
+                    $user_data = array();
+                    $user_data['id'] = $user['member_id'];
+                    $user_data['user_type'] = 2;
+                    $user_data['user_status'] = 1;
+                    $user_data['available_status'] = 1;
+                    $user_data['timezone'] = SETTINGS['timezone'];
+                    app('db')->insert('user_extend', $user_data);
+                }
+                $user = array_merge($user, $user_data);
+                $user['avatar_url'] = getUserAvatarURL($user);
+                
+                $_SESSION['user'] = $user;
+                cn_setcookie('cn_auth_key', $token, time() + (86400 * 30), "/");
+                return $user;
+            }
+            return null;
+        }
+        return null;
+        // Further processing ...
+        // if ($server_output == "OK") {
+        //     if ($server_output['code'] == 200) {
+        //         return true;
+        //     } else {
+        //         app('msg')->error(__('Phone is invalid!'));
+        //     }
+        // }
+    }
+
     public function phone_authenticate($phone, $otp)
     {
         $ch_verifyOtp = curl_init();
@@ -150,12 +211,14 @@ class Auth
                 if ($user_data == null) {
                     $user_data = array();
                     $user_data['id'] = $user['member_id'];
-                    $user_data['user_type'] = 1;
+                    $user_data['user_type'] = 2;
                     $user_data['user_status'] = 1;
                     $user_data['available_status'] = 1;
+                    $user_data['timezone'] = SETTINGS['timezone'];
                     app('db')->insert('user_extend', $user_data);
                 }
                 $user = array_merge($user, $user_data);
+                $user['avatar_url'] = getUserAvatarURL($user);
                 
                 $_SESSION['user'] = $user;
                 cn_setcookie('cn_auth_key', $token, time() + (86400 * 30), "/");
@@ -471,6 +534,9 @@ class Auth
     public function get_user_by_id($id){
         if ($id) {
             $user = $this->get_member($id);
+            if (!isset($user['member_id'])) {
+                return null;
+            }
 
             app('db')->where('id', $id);
             $user_data = app('db')->getOne('user_extend');

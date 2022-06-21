@@ -323,7 +323,7 @@ class homeController{
                 if (isset(SETTINGS['enable_social_login']) && SETTINGS['enable_social_login'] == 1) {
                     $data['hybridauth_providers'] = hybridauth(get_social_config())->getProviders();
                 }
-                echo app('twig')->render('phone_login.html', $data);
+                echo app('twig')->render('login.html', $data);
             }
         }else{
             header("HTTP/1.0 404 Not Found");
@@ -360,7 +360,7 @@ class homeController{
 
             if ($post_data && array_key_exists("email", $post_data) && array_key_exists("password", $post_data)) {
                 if ($recaptcha_ok) {
-                    $login = app('auth')->authenticate($post_data['email'], $post_data['password']);
+                    $login = app('auth')->password_authenticate($post_data['email'], $post_data['password']);
                     if($login){
                         app('auth')->logIP($post_data['email'],1,'Success');
                         if (isset($_GET['next'])) {
@@ -379,7 +379,7 @@ class homeController{
                 }else{
                     app('msg')->error(__('reCAPTCHA Error!'));
                     app('auth')->logIP($post_data['email'],1,'Recaptcha Error');
-                    get_login_page();
+                    //get_login_page();
                 }
             } else if ($post_data && array_key_exists("phone", $post_data) && array_key_exists("otp", $post_data)) {    
                 $login = app('auth')->phone_authenticate($post_data['phone'], $post_data['otp']);
