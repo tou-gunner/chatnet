@@ -1571,7 +1571,7 @@ class ajaxController{
     // delete chatroom
     public function delete_chatroom(){
         $post_data = app('request')->body;
-        $privilege_room_user = app('admin')->checkUserRoomPrivilege(app('auth')->user()['id'], $post_data['room_id']);
+        $privilege_room_user = app('admin')->checkUserRoomPrivilege(app('auth')->user()['member_id'], $post_data['room_id']);
         if($privilege_room_user){
             if (isset(SETTINGS['unlink_with_delete']) && SETTINGS['unlink_with_delete'] == true) {
                 //unlink cover image
