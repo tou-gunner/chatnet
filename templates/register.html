@@ -39,22 +39,32 @@
                                 {{ msg() }}
                                 <form class="user" method="POST">
                                     {{ csrf_token()|raw }}
-                                    <div class="form-group row">
+                                    <input type="hidden" id="is-register" name="is-register" value="1">
+                                    <div class="input-group mb-3">
+                                        <input type="text" name="phone" required="required" class="form-control form-control-user" id="phone" placeholder="{{ _('Phone Number') }}" aria-label="Phone Number">
+                                        <div class="input-group-append">
+                                          <button type="button" class="btn btn-outline-primary" id="get-otp">Get Otp</button>
+                                          <span class="input-group-text" id="otp-countdown" style="display: none"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <input type="text" name="otp" required="required" autocomplete="false" class="form-control form-control-user" id="otp" placeholder="{{ _('OTP') }}">
+                                    </div>
+
+                                    <!-- <div class="form-group">
+                                        <input type="text" required="required" class="form-control form-control-user" id="user_name" name="user_name" placeholder="{{ _('Username') }}" value="{{user_name}}">
+                                    </div> -->
+                                    <!-- <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
                                             <input type="text" required="required" class="form-control form-control-user" id="first_name" name="first_name" placeholder="{{ _('First Name') }}" value="{{first_name}}">
                                         </div>
                                         <div class="col-sm-6">
                                             <input type="text" required="required" class="form-control form-control-user" id="last_name" name="last_name" placeholder="{{ _('Last Name') }}" value="{{last_name}}">
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="text" required="required" class="form-control form-control-user" id="user_name" name="user_name" placeholder="{{ _('Username') }}" value="{{user_name}}">
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="email" required="required" class="form-control form-control-user" id="email" name="email" placeholder="{{ _('Email Address') }}" value="{{email}}">
-                                    </div>
+                                    </div> -->
 
-                                    {% if SETTINGS.register_dob %}
+                                    <!-- {% if SETTINGS.register_dob %}
                                     <div class="input-group mb-3">
                                         <div class="input-group-prepend">
                                             <span class="input-group-text" id="">{{_("Birthday")}}</span>
@@ -90,11 +100,11 @@
                                             {% endfor %}
                                         </select>
                                     </div>
-                                    {% endif %}
+                                    {% endif %} -->
 
                                     <input type="hidden" name="timezone" id="auto-timezone">
 
-                                    <div class="form-group row">
+                                    <!-- <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
                                             <input type="password" required="required" class="form-control form-control-user" autocomplete="false" id="password" name="password" placeholder="{{ _('Password') }}">
                                         </div>
@@ -102,6 +112,16 @@
                                             <input type="password" required="required" class="form-control form-control-user" autocomplete="false" id="password_repeat" name="password_repeat" placeholder="{{ _('Repeat Password') }}">
                                         </div>
                                     </div>
+                                      
+                                    <div class="form-group">
+                                    <label for="organization">Organization</label>
+                                    <select class="form-control" id="organization">
+                                        <option value="0">Ministry of Home Affairs</option>
+                                        <option value="1">Ministry of Planning</option>
+                                        <option value="2">Ministry of Energy and Mineral</option>
+                                    </select>
+                                    </div> -->
+
                                     <!-- reCpatcha -->
                                     {% if SETTINGS.recaptcha_version == 2 %}
                                     <div class="g-recaptcha" data-sitekey="{{SETTINGS.recaptcha_sitekey}}"></div>
@@ -123,6 +143,8 @@
                                     {% else %}
                                         <input type="checkbox" checked style="display:none" class="form-check-input" name="policy-agree">
                                     {% endif %}
+                                    
+                                    <p id="error-text" class="text-danger text-center">{{ error }}</p>
                                         
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
                                         {{ _('Register Account') }}
@@ -133,15 +155,39 @@
                                     <a class="small" href="{{ url('login') }}"><i class="fa fa-sign-in-alt"></i> {{_("Already have an Account? Login!")}}</a>
                                 </div>
                                 <hr>
-                                <div class="text-center">
-                                    <a class="small" href="{{ url('index') }}"><i class="fa fa-home"></i> {{_("Home")}}</a>
-                                </div>
+                                <!-- <div class="text-center">
+                                    <a class="small" href="{{ url('index') }}"><i class="fa fa-arrow-right"></i> {{_("Home")}}</a>
+                                </div> -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="action-logo-new">
+                <img class="login-logo" src="{{STATIC_URL}}/img/logo_big.png">
+            </div>
         </div>
     </div>
 </div>
+
+
+<div id="get-otp-modal" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="icon-box">
+                    <i class="material-icons">&#xE876;</i>
+                </div>				
+                <!-- <h4 class="modal-title">Sent!</h4>	 -->
+            </div>
+            <div class="modal-body">
+                <p class="text-center">Opt has been sent to <span id="get-otp-modal-phone"></span>. Please check you mobile phone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-block" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>  
+
 {% endblock %}

@@ -102,11 +102,7 @@
                                 {% if IS_AUTHENTICATED %}
                                     <li class="nav-item dropdown no-caret">
                                         <a class="nav-link dropdown-toggle btn-teal btn px-4 ml-lg-4" id="navbarDropdownDocs" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            {% if SETTINGS.display_name_format == 'username' %}
-                                                {{ USER.member_name }}
-                                            {% else %}
-                                                {{ USER.member_name }}
-                                            {% endif %}
+                                            {{ USER.user_name }}
                                             <i class="fas fa-chevron-right dropdown-arrow"></i>
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right animated--fade-in" aria-labelledby="navbarDropdownDocs">

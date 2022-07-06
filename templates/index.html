@@ -1,6 +1,6 @@
 {% extends "base.index.html" %}
 {% block content %}
-<section class="bg-white py-5 main-content {% if SETTINGS.homepage_banner_view == '0' %}no-header{% endif %}">
+<!-- <section class="bg-white py-5 main-content {% if SETTINGS.homepage_banner_view == '0' %}no-header{% endif %}">
     <div class="container">
         <span class="chat-list-header">
             {% if SETTINGS.chatroom_list_title %}
@@ -61,10 +61,10 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- chat room loop -->
-        <div class="row" id="chat-room-loop">
+        <!-- <div class="row" id="chat-room-loop">
             {% if SETTINGS.homepage_chat_room_view == "small" %}
                 {% include 'chat_room_loop_small.html' %}
             {% else %}
@@ -79,5 +79,5 @@
             </div>
         </div>
     </div>
-</section>
+</section> -->
 {% endblock %}

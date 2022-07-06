@@ -866,7 +866,7 @@ class Chat {
         $group_user_data = app('db')->getOne('group_users');
 
         if ($chat_id) { // when chat search
-            app('db')->join("user_extend u", "c.sender_id=u.id", "LEFT");
+            app('db')->join("users u", "c.sender_id=u.id", "LEFT");
             app('db')->where ('c.group_id', $group);
             app('db')->where ('c.room_id', $chat_room);
             app('db')->where ('c.id <= ' . $chat_id);
@@ -897,13 +897,13 @@ class Chat {
                 }
             }
             app('db')->orderBy('c.time','desc');
-            $chats1 = app('db')->get('group_chats c', array(0,10), 'c.*, u.user_type, \'group\' as chat_type');
+            $chats1 = app('db')->get('group_chats c', array(0,10), 'c.*, u.user_name, u.first_name, u.last_name, u.avatar, u.user_type, \'group\' as chat_type');
             if ($chats1) {
                 $_SESSION['last_loaded_up'] = (end($chats1)['id']?end($chats1)['id']:0);
             }
 
 
-            app('db')->join("user_extend u", "c.sender_id=u.id", "LEFT");
+            app('db')->join("users u", "c.sender_id=u.id", "LEFT");
             app('db')->where ('c.group_id', $group);
             app('db')->where ('c.room_id', $chat_room);
             app('db')->where ('c.id > ' . $chat_id);
@@ -934,14 +934,14 @@ class Chat {
                 }
             }
             app('db')->orderBy('c.time','asc');
-            $chats2 = app('db')->get('group_chats c', array(0,10), 'c.*, u.user_type, \'group\' as chat_type');
+            $chats2 = app('db')->get('group_chats c', array(0,10), 'c.*, u.user_name, u.first_name, u.last_name, u.avatar, u.user_type, \'group\' as chat_type');
             if ($chats2) {
                 $_SESSION['last_loaded_down'] = (end($chats2)['id']);
             }
             $chats = array_merge( array_reverse($chats1), $chats2);
             return $chats;
         }else{ // when load more and load chats
-            app('db')->join("user_extend u", "c.sender_id=u.id", "LEFT");
+            app('db')->join("users u", "c.sender_id=u.id", "LEFT");
             app('db')->where ('c.group_id', $group);
             app('db')->where ('c.room_id', $chat_room);
             if (isset(SETTINGS['chat_load_type']) && SETTINGS['chat_load_type'] == 2){
@@ -982,7 +982,7 @@ class Chat {
                 }
                 app('db')->orderBy('c.time','asc');
             }
-            $chats = app('db')->get('group_chats c', array(0,20), 'c.*, u.user_type, \'group\' as chat_type');
+            $chats = app('db')->get('group_chats c', array(0,20), 'c.*, u.user_name, u.first_name, u.last_name, u.avatar, u.user_type, \'group\' as chat_type');
             // echo app('db')->getLastQuery();
             if ($chats) {
                 if ($direction == 'up') {
@@ -992,15 +992,7 @@ class Chat {
                 }
                 $chats = array_reverse($chats);
             }
-            $output = array();
-            foreach ($chats as $chat) {
-                if (!isset($chat['member_id'])) {
-                    $user = app('auth')->user($chat['sender_id']);
-                    $chat = array_merge($user, $chat);
-                }
-                array_push($output, $chat);
-            }
-            return $output;
+            return $chats;
         }
 
     }

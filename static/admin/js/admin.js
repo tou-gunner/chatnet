@@ -276,7 +276,7 @@ function getUserAvatar(obj, display_name){
         if (SETTINGS.display_name_format == 'username') {
             var display_name = obj.user_name;
         }else{
-            var display_name = obj.first_name + ' ' + obj.last_name;
+            var display_name = obj.first_name != null ? obj.first_name + ' ' + obj.last_name;
         }
     }
     if(obj.avatar) {

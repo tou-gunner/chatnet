@@ -11,7 +11,7 @@ class adminController{
                 header('HTTP/1.0 403 Forbidden');
                 exit();
             }
-        } 
+        }
 
         if(app('auth')->isAuthenticated()){
             $logged_user = app('auth')->user(app('auth')->user()['id']);
@@ -58,9 +58,8 @@ class adminController{
         $user_list = app('db')->get('users', array(0,10));
         $users = array();
         foreach ($user_list as $each_user) {
-            $user = app('auth')->user($each_user['id']);
-            $each_user['avatar_url'] = getUserAvatarURL($user);
-            array_push($users, array_merge($user, $each_user));
+            $each_user['avatar_url'] = getUserAvatarURL($each_user);
+            array_push($users, $each_user);
         }
         $data['latest_users'] = $users;
         $data['lang_list'] = app('db')->get('languages');

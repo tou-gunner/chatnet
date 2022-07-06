@@ -650,7 +650,8 @@ function collect_update_terms(){
         'chatnet.js',
         'scripts.js',
         'admin.js',
-        'index.js'
+        'index.js',
+        'agora.js'
     );
     $added_terms = array();
     foreach ($dirs as $dir) {
@@ -1346,7 +1347,13 @@ function getUserAvatarURL($user_data){
         //         }
         //     }
         // }
-        if ($user_data['member_avatar'] && !empty($user_data['member_avatar'])) {
+        if (key_exists('avatar', $user_data) && $user_data['avatar'] && !empty($user_data['avatar'])) {
+            if (!filter_var($user_data['avatar'], FILTER_VALIDATE_URL) === false) {
+                $avatar_url = $user_data['avatar'];
+            } else {
+                $avatar_url = MEDIA_URL."/avatars/".$user_data['avatar'];
+            }
+        } else if (key_exists('member_avatar', $user_data) && $user_data['member_avatar'] && !empty($user_data['member_avatar'])) {
             $avatar_url = 'https://alomall.la/demo/system/upfiles/shop/avatar/'.$user_data['member_avatar'];
         } else {
             if ($user_data['user_type'] == 3) {
@@ -1362,5 +1369,106 @@ function getUserAvatarURL($user_data){
     }
     return $avatar_url;
 }
+
+// Seng add
+
+function fetchUserData($users){
+    $id_list = implode(',', array_column($users, 'user_id'));
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=get_member_list");
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, 
+        http_build_query(array('id_list' => "$id_list")));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $server_output = json_decode(curl_exec($ch), true);
+    curl_close ($ch);
+    if ($server_output) {
+        if ($server_output['code'] == 200) {
+            $user_list = $server_output['datas'];
+            $data = array();
+            foreach ($user_list as $user) {
+                $user['user_name'] = $user['member_name'];
+                $user['avatar_url'] = getUserAvatarURL($user);
+                array_push($data, array_merge($user, searchArrayInArray('user_id', $user['member_id'], $users)));
+            }
+            return $data;
+        } else {
+
+        }
+    }
+}
+
+function searchArrayInArray($index, $value, $array) {
+   foreach ($array as $val) {
+       if ($val[$index] == $value) {
+           return $val;
+       }
+   }
+   return null;
+}
+
+// function distinct($index, $array) {
+//     $result = array();
+//     foreach ($array as $key => $val) {
+//         array_search()
+//     }
+// }
+
+function getCurrentCall($user_id){
+    $currentTimestamp = (new \DateTime("now", new \DateTimeZone('UTC')))->getTimestamp();
+    $sql = "SELECT* FROM cn_calling WHERE state = 2 AND timeout_in > $currentTimestamp AND ( caller = $user_id OR receiver = $user_id )";
+    $res = app('db')->rawQuery($sql);
+    if (is_array($res) && isset($res[0])) {
+        return $res[0];
+    }
+}
+
+function getCallByChannel($channel){
+    app('db')->where('id', explode("-",$channel)[1]);
+    return app('db')->getOne('calling');
+}
+
+function getOutgoingCall($user_id){
+    $currentTimestamp = (new \DateTime("now", new \DateTimeZone('UTC')))->getTimestamp();
+    app('db')->where('caller', $user_id);
+    app('db')->where('timeout_in', $currentTimestamp, '>');
+    app('db')->where('state', CALL_STATE_RINGING);
+    return app('db')->getOne('calling');
+}
+
+function getIncomingCall($user_id){
+    $currentTimestamp = (new \DateTime("now", new \DateTimeZone('UTC')))->getTimestamp();
+    app('db')->where('receiver', $user_id);
+    app('db')->where('timeout_in', $currentTimestamp, '>');
+    app('db')->where('state', CALL_STATE_RINGING);
+    return app('db')->getOne('calling');
+}
+
+function generateAgoraToken($id, $uid){
+    $appID = AGORA_APP_ID;
+    $appCertificate = AGORA_APP_CERT;
+    $channelName = "VideoCall-$id";
+    $role = app('RtcTokenBuilder')::RolePublisher;
+    $expireTimeInSeconds = 3600;
+    $currentTimestamp = (new \DateTime("now", new \DateTimeZone('UTC')))->getTimestamp();
+    $privilegeExpiredTs = $currentTimestamp + $expireTimeInSeconds;
+
+    $token = app('RtcTokenBuilder')::buildTokenWithUid($appID, $appCertificate, $channelName, $uid, $role, $privilegeExpiredTs);
+    return $token;
+}
+
+// Seng add constants
+
+const AGORA_APP_ID = '3f00c7e5a9594a81a6c26895c95f105d';
+const AGORA_APP_CERT = '22852ac8046a4d13aaa089f20dce1494';
+
+const CALL_STATE_RINGING = 1;
+const CALL_STATE_CALLING = 2;
+const CALL_STATE_ENDED = 3;
+const CALL_STATE_DECLINED = 4;
+const CALL_STATE_CANCELED = 5;
+const CALL_STATE_TIMEOUT = 6;
+
+const CALL_TIMEOUT_IN_SECOND = 60;
 
 ?>

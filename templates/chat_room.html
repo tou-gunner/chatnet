@@ -148,11 +148,15 @@
                             </div>
                             <span class="bottom-username">
                                 {% if IS_AUTHENTICATED %}
-                                {% if SETTINGS.display_name_format == 'username' %}
-                                    {{ USER.member_name }}
-                                {% else %}
-                                    {{ USER.member_name }}
-                                {% endif %}
+                                    {% if SETTINGS.display_name_format == 'username' %}
+                                        {{ USER.user_name }}
+                                    {% else %}
+                                        {% if USER.first_name != null %}
+                                            {{ USER.first_name }} {{ USER.last_name }}
+                                        {% else %}
+                                            {{ USER.user_name }}
+                                        {% endif %}
+                                    {% endif %}
                                 {% else %}
                                 {{ _('Guest') }}
                                 {% endif %}
@@ -472,15 +476,15 @@
                                  
 
                                 
-                                <button data-toggle="tooltip" data-placement="bottom" class="btn btn-sm btn-notifications btn-tooltip " type="button" title="{{ _('Voice call') }}">
+                                <!-- <button data-toggle="tooltip" data-placement="bottom" class="btn btn-sm btn-voicecall btn-tooltip " type="button" title="{{ _('Voice call') }}">
                                     <i class="fas fa-phone"></i>
                                     <span class="badge badge-danger badge-counter noti-count" style="display:none"></span>
                                 </button>
 
-                                <button data-toggle="tooltip" data-placement="bottom" class="btn btn-sm btn-notifications btn-tooltip " type="button" title="{{ _('Video call') }}">
+                                <button data-toggle="tooltip" data-placement="bottom" class="btn btn-sm btn-videocall btn-tooltip " type="button" title="{{ _('Video call') }}">
                                     <i class="fas fa-video"></i>
                                     <span class="badge badge-danger badge-counter noti-count" style="display:none"></span>
-                                </button>
+                                </button> -->
 
                                 <button data-toggle="tooltip" data-placement="bottom" class="btn btn-sm btn-notifications btn-tooltip " type="button" title="{{ _('Notifications') }}">
                                     <i class="fas fa-bell"></i>
@@ -1359,6 +1363,44 @@
         </div>
     </div>
 </div>
+
+<!-- Seng add -->
+<!-- <div class="modal fade" id="videocall-modal" role="dialog">
+    <div class="modal-dialog">
+    
+      <div class="modal-content">
+        <div class="modal-body">
+          <p>Calling <span class="receiver-name"></span>...</p>
+          <div id="me"></div>
+          <div id="remote-container">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default btn-cancel-call">Cancel</button>
+          <button type="button" class="btn btn-default btn-end-call">End</button>
+        </div>
+      </div>
+      
+    </div>
+</div>
+
+<div class="modal fade" id="incoming-videocall-modal" role="dialog">
+    <div class="modal-dialog">
+    
+      <div class="modal-content">
+        <div class="modal-body">
+          <p><span class="caller-name"></span> is calling you...</p>
+          <button type="button" class="btn btn-default btn-accept-call">Accept</button>
+          <button type="button" class="btn btn-default btn-decline-call">Decline</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+      
+    </div>
+</div> -->
+
 <!-- End of Page Wrapper -->
 {% endblock %}
 {% block scripts %}<script src="{{ url('chatnet_js') }}{{VIEW_AS}}"></script>{% endblock %}

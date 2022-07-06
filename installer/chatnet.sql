@@ -498,14 +498,21 @@ CREATE TABLE IF NOT EXISTS `cn_notifications`(
     KEY `cn_notifications_idx_user_id_is_read` (`user_id`,`is_read`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Seng Add
+
 --
 -- Table structure for table `cn_user_extend`
 --
 
 CREATE TABLE IF NOT EXISTS `cn_user_extend`(
     `id` INT NOT NULL,
+    `first_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `last_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `avatar` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `organization` varchar(50) NULL,
     `about` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `user_status` smallint(6) DEFAULT '1' COMMENT 'ONLINE = 1, OFFLINE = 2, BUSY = 3',
+    `call_available` boolean NOT NULL DEFAULT '1',
     `available_status` smallint(6) DEFAULT '1' COMMENT 'ACTIVE = 1, INACTIVE = 2',
     `last_seen` datetime NULL DEFAULT NULL,
     `last_login` datetime NULL DEFAULT NULL,
@@ -515,6 +522,27 @@ CREATE TABLE IF NOT EXISTS `cn_user_extend`(
     PRIMARY KEY(`id`),
     KEY `cn_users_idx_id` (`id`),
     KEY `cn_users_idx_user_type` (`user_type`)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `cn_calling`
+--
+
+CREATE TABLE IF NOT EXISTS `cn_calling`(
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `caller` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `receiver` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `token` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `is_video` boolean COLLATE utf8mb4_unicode_ci NOT NULL,
+    `timestamp` bigint COLLATE utf8mb4_unicode_ci NOT NULL,
+    `timeout_in` bigint NOT NULL,
+    `state` tinyint(2) NOT NULL COMMENT 'Unset = 0, Ringing = 1, Calling = 2, Ended = 3, Declined = 4, Canceled = 5, Timeout = 6',
+    `is_group` boolean NOT NULL,
+    `ended_time` bigint,
+    PRIMARY KEY(`id`),
+    KEY `cn_calling_idx_id` (`id`),
+    KEY `cn_calling_idx_caller` (`caller`),
+    KEY `cn_calling_idx_receiver` (`receiver`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 COMMIT;

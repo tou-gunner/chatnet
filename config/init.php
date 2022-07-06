@@ -208,7 +208,7 @@ if (defined('SETTINGS')) {
 
     // View as for Admins
     if(isset($_GET['view-as'])){
-        $_SESSION['view-as'] = app('auth')->get_user_by_id($_GET['view-as']);
+        $_SESSION['view-as'] = app('auth')->user($_GET['view-as']);
     }
 
     // PHP Mailer Settings
@@ -251,5 +251,9 @@ if (defined('SETTINGS')) {
 
 }
 
+//Seng add
+// RtcTokenBuilder
+require_once('classes/RtcTokenBuilder.php');
+app()->RtcTokenBuilder = new RtcTokenBuilder();
 
 ?>

@@ -388,7 +388,7 @@
                                 {% if room_user.id %}
                                 <tr>
                                     {% if SETTINGS.display_name_format == 'fullname' %}
-                                    <td>{{room_user.first_name}} {{room_user.last_name}}</td>
+                                    <td>{% if room_user.first_name != null %}{{room_user.first_name}} {{room_user.last_name}}{% else %}{{ room_user.user_name }}{% endif %}</td>
                                     {% endif %}
                                     <td>
                                         {{ room_user.user_name }}

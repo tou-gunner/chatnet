@@ -38,6 +38,8 @@ if (file_exists(BASE_PATH.'config/settings.php')) {
     $route->get('/js/chatnet_js', 'App\homeController@chatnet_js')->as('chatnet_js');
     $route->get('/js/index_js', 'App\homeController@index_js')->as('index_js');
     $route->get('/js/scripts_js', 'App\homeController@scripts_js')->as('scripts_js');
+    $route->get('/js/agora_js', 'App\homeController@agora_js')->as('agora_js');
+    $route->get('/js/login_js', 'App\homeController@login_js')->as('login_js');
     $route->get('/js/firebase-messaging-sw', 'App\homeController@firebase_messaging_sw')->as('firebase-messaging-sw');
     $route->any('/setlang/{reqlang}', 'App\homeController@setlang')->as('setlang');
     $route->any('/settheme/{reqtheme}', 'App\homeController@settheme')->as('settheme');
@@ -165,6 +167,16 @@ if (file_exists(BASE_PATH.'config/settings.php')) {
     $route->any('ajax/notification-delete', 'App\ajaxController@notification_delete')->as('ajax-delete-noti');
     $route->any('ajax/notification-unread-count', 'App\ajaxController@notification_unread_count')->as('ajax-noti-unread-count');
     $route->any('ajax/get-recent-active-media', 'App\ajaxController@get_recent_active_media')->as('ajax-get-active-recent-media');
+    
+    // Seng Add
+    $route->any('ajax/video-call', 'App\ajaxController@video_call')->as('ajax-video-call');
+    $route->any('ajax/accept-call', 'App\ajaxController@accept_call')->as('ajax-accept-call');
+    $route->any('ajax/decline-call', 'App\ajaxController@decline_call')->as('ajax-decline-call');
+    $route->any('ajax/end-call', 'App\ajaxController@end_call')->as('ajax-end-call');
+    $route->any('ajax/cancel-call', 'App\ajaxController@cancel_call')->as('ajax-cancel-call');
+    $route->any('ajax/user-leave', 'App\ajaxController@user_leave')->as('ajax-user-leave');
+    $route->any('ajax/update-call-available', 'App\ajaxController@update_call_available')->as('ajax-update-call-available');
+    $route->any('ajax/get-otp', 'App\ajaxController@get_otp')->as('ajax-get-otp');
     
 
     // cron jobs

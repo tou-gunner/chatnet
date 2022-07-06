@@ -2,6 +2,13 @@
 
 "use strict";
 
+const CALL_STATE_RINGING = 1;
+const CALL_STATE_CALLING = 2;
+const CALL_STATE_ENDED = 3;
+const CALL_STATE_DECLINED = 4;
+const CALL_STATE_CANCELED = 5;
+const CALL_STATE_TIMEOUT = 6;
+
 var isMobile = false;
 var lastTypedTime = new Date(0);
 var chat_date = "";
@@ -33,6 +40,8 @@ var audioContext;
 var recordingTime = 0;
 var msg_forward_btn = "";
 var emojione = false;
+
+let is_calling = false;
 
 // User Object
 const USER = {
@@ -442,7 +451,7 @@ function getActiveInfo(user_show=false, load_panel=true){
                 if (SETTINGS.display_name_format == 'username') {
                     var display_name = data.info.user_name;
                 }else{
-                    var display_name = data.info.first_name + ' ' + data.info.last_name;
+                    var display_name = data.info.first_name != null ? data.info.first_name + ' ' + data.info.last_name : data.info.user_name;
                 }
                 $('.active-user-title, .active-user-name').html(display_name);
                 if(user_show==false){
@@ -452,7 +461,7 @@ function getActiveInfo(user_show=false, load_panel=true){
                         $('.chat-slug').empty();
                     }else{
                         $('.chat-title, .active-user-title, .active-user-name').html(display_name);
-                        $('.chat-slug').html("@"+data.info.user_name);
+                        $('.chat-slug').html("@"+(data.info.user_name));
                     }
 
                 }
@@ -569,9 +578,9 @@ function getActiveInfo(user_show=false, load_panel=true){
                     var country = ``;
 
                     if (SETTINGS.display_name_format == 'username') {
-                    	var display_name = obj.member_name;
+                    	var display_name = obj.user_name;
                     }else{
-                    	var display_name = obj.member_truename ?? obj.member_name;
+                    	var display_name = obj.first_name != null ? obj.first_name + ' ' + obj.last_name : obj.user_name;
                     }
 
                     var img_src = getUserAvatar(obj, display_name);
@@ -1022,16 +1031,16 @@ function createMessage(obj, direction="down", save_message=false, decode=true){
         if (SETTINGS.display_name_format == 'username') {
         	var display_name = '{{ USER.user_name }}';
         }else{
-        	var display_name = '{{ USER.first_name }}';
+        	var display_name = '{% if USER.first_name != null %}{{ USER.first_name }}{% else %}{{ USER.user_name }}{% endif %}';
         }
     }else{
         var message_class_name = "replies" + replies_animation;
         var msg_status = '';
         var msg_status_class = '';
         if (SETTINGS.display_name_format == 'username') {
-        	var display_name = obj.member_name;
+        	var display_name = obj.user_name;
         }else{
-        	var display_name = obj.member_truename ?? obj.member_name;
+        	var display_name = obj.first_name != null ? obj.first_name + ' ' + obj.last_name : obj.user_name;
         }
         if(obj.chat_type == "group"){
             start_chat = true;
@@ -1800,9 +1809,9 @@ function chatSearch(){
                         var res_name = 'You';
                     }else{
                         if (SETTINGS.display_name_format == 'username') {
-                        	var display_name = obj.member_name;
+                        	var display_name = obj.user_name;
                         }else{
-                            var display_name = obj.member_truename ?? obj.member_name;
+                            var display_name = obj.first_name ? obj.first_name + ' ' + obj.last_name : obj.user_name;
                         }
                         var res_name = display_name;
                     }
@@ -1960,9 +1969,9 @@ function createOnlineUser(obj){
             var last_msg = "<i class='fa fa-code'></i> "+code_lang+" {{_('code')}}";
         }else{
             if (SETTINGS.display_name_format == 'username') {
-            	var display_name = obj.member_name;
+            	var display_name = obj.user_name;
             }else{
-                var display_name = obj.member_truename ?? obj.member_name;
+                var display_name = obj.first_name ? obj.first_name + ' ' + obj.last_name : obj.user_name;
             }
             last_msg = "{{_('Say hi to')}} " + display_name ;
         }
@@ -1997,9 +2006,9 @@ function createOnlineUser(obj){
     }
 
     if (SETTINGS.display_name_format == 'username') {
-        var display_name = obj.member_name;
+        var display_name = obj.user_name;
     }else{
-        var display_name = obj.member_truename ?? obj.member_name;
+        var display_name = obj.first_name ? obj.first_name + ' ' + obj.last_name : obj.user_name;
     }
 
     var img_src = getUserAvatar(obj, display_name);
@@ -2108,9 +2117,9 @@ function createForwardUser(obj){
     }
 
     if (SETTINGS.display_name_format == 'username') {
-        var display_name = obj.member_name;
+        var display_name = obj.user_name;
     }else{
-        var display_name = obj.member_truename ?? obj.member_name;
+        var display_name = obj.first_name ? obj.first_name + ' ' + obj.last_name : obj.user_name;
     }
 
     var img_src = getUserAvatar(obj, display_name);
@@ -3740,8 +3749,8 @@ $( document ).ready(function() {
                 	var display_name = data.user_name;
                     var replied_to_short = data.user_name;
                 }else{
-                	var display_name = data.first_name + ' ' + data.last_name;
-                    var replied_to_short = data.first_name;
+                	var display_name = data.first_name != null ? data.first_name + ' ' + data.last_name : data.user_name;
+                    var replied_to_short = data.first_name != null ? data.first_name : data.user_name;
                 }
                 if(data.sender_id ==  USER.id ){
                     var replied_to = "{{_('Reply to your chat')}}";
@@ -4767,6 +4776,7 @@ $( document ).ready(function() {
                         last_chat_id: last_chat_id,
                         chat_meta_id: chat_meta_id,
                         is_typing: is_typing,
+                        current_call: currentCall
                     },
                     beforeSend: function() {
                         heartbeat_status = 0; //working
@@ -4795,6 +4805,48 @@ $( document ).ready(function() {
                                     getActiveRecentMedia();
                                 }
                             });
+                        }
+
+                        // Seng add
+                        if (data.call_data) {
+                            if (data.call_data.incoming_call) {
+                                //Open incoming call modal.
+                                if (!currentCall && data.call_data.incoming_call.receiver == USER.id) {
+                                    $(".caller-name").html(data.call_data.caller_name);
+                                    $("#incoming-videocall-modal").modal('show');
+                                    currentCall = data.call_data.incoming_call;
+                                }
+                            } else {
+                                $("#incoming-videocall-modal").modal('hide');
+                            }
+    
+                            if (data.call_data.current_call) {
+                                if (data.call_data.current_call.caller == USER.id) {
+                                    //Close video call modal if receiver not available.
+                                    if(currentCall && data.call_data.current_call.state == CALL_STATE_RINGING && data.receiver_available == 0) {
+                                        currentCall = null;
+                                        endCall();
+                                        $("#videocall-modal").modal('hide');
+                                        alert('Another user is currently busy')
+                                    }
+                                    
+                                    //Close video call modal if be declined.
+                                    if(currentCall && data.call_data.current_call.state == CALL_STATE_DECLINED) {
+                                        currentCall = null;
+                                        endCall();
+                                        $("#videocall-modal").modal('hide');
+                                        alert('Your call is decline by another user')
+                                    }
+                                }
+    
+                                //Close video call modal if the call is ended.
+                                if(currentCall && data.call_data.current_call.state == CALL_STATE_ENDED) {
+                                    currentCall = null;
+                                    endCall();
+                                    $("#videocall-modal").modal('hide');
+                                    alert('The call is ended')
+                                }
+                            }
                         }
 
                         if (data.unnotified_chats) {
@@ -4979,5 +5031,228 @@ $( document ).ready(function() {
 
 });
 
+// Seng Add
+$('.btn-end-call').hide();
+
+const AGORA_APP_ID = "3f00c7e5a9594a81a6c26895c95f105d";
+let currentCall;
+
+let rtc = {
+    localAudioTrack: null,
+    localVideoTrack: null,
+    client: null,
+};
+
+// Create an AgoraRTCClient object.
+rtc.client = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
+
+// Listen for the "user-published" event, from which you can get an AgoraRTCRemoteUser object.
+rtc.client.on("user-published", async (user, mediaType) => {
+    // Subscribe to the remote user when the SDK triggers the "user-published" event
+    await rtc.client.subscribe(user, mediaType);
+    console.log("subscribe success");
+
+    // If the remote user publishes a video track.
+    if (mediaType === "video") {
+        // Get the RemoteVideoTrack object in the AgoraRTCRemoteUser object.
+        const remoteVideoTrack = user.videoTrack;
+        // Dynamically create a container in the form of a DIV element for playing the remote video track.
+        const remotePlayerContainer = document.createElement("div");
+        // Specify the ID of the DIV container. You can use the uid of the remote user.
+        remotePlayerContainer.id = user.uid.toString();
+        remotePlayerContainer.textContent = "Remote user " + user.uid.toString();
+        remotePlayerContainer.style.width = "640px";
+        remotePlayerContainer.style.height = "480px";
+        $('#remote-container').append(remotePlayerContainer);
+
+        // Play the remote video track.
+        // Pass the DIV container and the SDK dynamically creates a player in the container for playing the remote video track.
+        remoteVideoTrack.play(remotePlayerContainer);
+    }
+
+    // If the remote user publishes an audio track.
+    if (mediaType === "audio") {
+        // Get the RemoteAudioTrack object in the AgoraRTCRemoteUser object.
+        const remoteAudioTrack = user.audioTrack;
+        // Play the remote audio track. No need to pass any DOM element.
+        remoteAudioTrack.play();
+    }
+
+    // Listen for the "user-unpublished" event
+    rtc.client.on("user-unpublished", user => {
+        // Get the dynamically created DIV container.
+        const remotePlayerContainer = document.getElementById(user.uid);
+        // Destroy the container.
+        remotePlayerContainer?.remove();
+        
+        $.ajax({
+            url: "{{ url('ajax-user-leave') }}",
+            type: "POST",
+            dataType: 'json',
+            data: {
+                csrftoken: '{{ csrf_token_ajax() }}',
+                user_id: user.uid
+            },
+            success: async function(data) {
+            }
+        });
+    });
+});
+
+async function startBasicCall() {
+
+    // Join an RTC channel.
+    await rtc.client.join(AGORA_APP_ID, `VideoCall-${currentCall.id}`, currentCall.token, USER.id);
+    // Create a local audio track from the audio sampled by a microphone.
+    rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    // Create a local video track from the video captured by a camera.
+    rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+    // Publish the local audio and video tracks to the RTC channel.
+    await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
+    // Dynamically create a container in the form of a DIV element for playing the local video track.
+    const localPlayerContainer = document.createElement("div");
+    // Specify the ID of the DIV container. You can use the uid of the local user.
+    localPlayerContainer.id = USER.id;
+    localPlayerContainer.textContent = "Local user " + USER.id;
+    // localPlayerContainer.style.width = "640px";
+    // localPlayerContainer.style.height = "480px";
+    $('#me').append(localPlayerContainer);
+
+    // Play the local video track.
+    // Pass the DIV container and the SDK dynamically creates a player in the container for playing the local video track.
+    rtc.localVideoTrack.play(localPlayerContainer);
+    is_calling = true;
+    console.log("publish success!");
+}
+
+async function endCall() {
+    // Destroy the local audio and video tracks.
+    rtc.localAudioTrack.close();
+    rtc.localVideoTrack.close();
+
+    // Traverse all remote users.
+    rtc.client.remoteUsers.forEach(user => {
+        // Destroy the dynamically created DIV containers.
+        const playerContainer = $('#remote-container').find(`#${user.uid}`);
+        playerContainer && playerContainer.remove();
+    });
+
+    // Leave the channel.
+    await rtc.client.leave();
+    is_calling = false;
+}
+
+$(document).on('click', '.btn-videocall', function(e) {
+    // if (!client) { //client is not initialized
+    //     return;
+    // }
+    var active_user = $('#active_user').val();
+    if (active_user) {
+        // Join a channel
+        $.ajax({
+            url: "{{ url('ajax-video-call') }}",
+            type: "POST",
+            dataType: 'json',
+            data: {
+                csrftoken: '{{ csrf_token_ajax() }}',
+                receiver: active_user
+            },
+            success: async function(data) {
+                currentCall = data;
+                await startBasicCall();
+                $(".receiver-name").html(data.receiver_name);
+                $("#videocall-modal").modal();
+            }
+        });
+    }
+});
+
+$('.btn-cancel-call').click(function() {
+    $("#videocall-modal").modal('hide');
+    endCall();
+    $("#me").html('');
+    $.ajax({
+        url: "{{ url('ajax-cancel-call') }}",
+        type: "POST",
+        dataType: 'json',
+        data: {
+            csrftoken: '{{ csrf_token_ajax() }}',
+        },
+        success: function(data) {
+        },
+    });
+});
+
+$('.btn-accept-call').click(function() {
+    $.ajax({
+        url: "{{ url('ajax-accept-call') }}",
+        type: "POST",
+        dataType: 'json',
+        data: {
+            csrftoken: '{{ csrf_token_ajax() }}',
+        },
+        success: async function(data) {
+            currentCall = data;
+            await startBasicCall();
+            $("#incoming-videocall-modal").modal('hide');
+            $("#videocall-modal").modal('show');
+        },
+    });
+});
+
+$('.btn-decline-call').click(function() {
+    $.ajax({
+        url: "{{ url('ajax-decline-call') }}",
+        type: "POST",
+        dataType: 'json',
+        data: {
+            csrftoken: '{{ csrf_token_ajax() }}',
+        },
+        success: function(data) {
+            $("#incoming-videocall-modal").modal('hide');
+        },
+    });
+});
+
+$('.btn-end-call').click(function(e) {
+    $("#videocall-modal").modal('hide');
+    endCall();
+    $.ajax({
+        url: "{{ url('ajax-end-call') }}",
+        type: "POST",
+        dataType: 'json',
+        data: {
+            csrftoken: '{{ csrf_token_ajax() }}',
+        },
+        success: function(data) {
+        },
+    });
+});
+
+// Handle errors.
+let handleError = function(err){
+    console.log("Error: ", err);
+};
+
+// Query the container to which the remote stream belong.
+let remoteContainer = document.getElementById("remote-container");
+
+// Add video streams to the container.
+function addVideoStream(elementId){
+    // Creates a new div for every stream
+    let streamDiv = document.createElement("div");
+    // Assigns the elementId to the div.
+    streamDiv.id = elementId;
+    // Takes care of the lateral inversion
+    streamDiv.style.transform = "rotateY(180deg)";
+    // Adds the div to the container.
+    remoteContainer.appendChild(streamDiv);
+};
+
+// Remove the video stream from the container.
+function removeVideoStream(elementId) {
+    let remoteDiv = document.getElementById(elementId);
+    if (remoteDiv) remoteDiv.parentNode.removeChild(remoteDiv);
+};
 
 })();

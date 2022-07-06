@@ -360,7 +360,7 @@ class homeController{
 
             if ($post_data && array_key_exists("email", $post_data) && array_key_exists("password", $post_data)) {
                 if ($recaptcha_ok) {
-                    $login = app('auth')->password_authenticate($post_data['email'], $post_data['password']);
+                    $login = app('auth')->authenticate($post_data['email'], $post_data['password']);
                     if($login){
                         app('auth')->logIP($post_data['email'],1,'Success');
                         if (isset($_GET['next'])) {
@@ -379,24 +379,7 @@ class homeController{
                 }else{
                     app('msg')->error(__('reCAPTCHA Error!'));
                     app('auth')->logIP($post_data['email'],1,'Recaptcha Error');
-                    //get_login_page();
-                }
-            } else if ($post_data && array_key_exists("phone", $post_data) && array_key_exists("otp", $post_data)) {    
-                $login = app('auth')->phone_authenticate($post_data['phone'], $post_data['otp']);
-                if($login) {
-                    app('auth')->logIP($post_data['phone'],1,'Success');
-                    if (isset($_GET['next']) && !empty($_GET['next'])) {
-                        if (filter_var($_GET['next'], FILTER_VALIDATE_URL) != false) {
-                            header("Location: " . $_GET['next']);
-                        }else {
-                            header("Location: " . route('index'));
-                        }
-                    }else{
-                        header("Location: " . route('index'));
-                    }
-                }else{
-                    app('auth')->logIP($post_data['phone'],1,'Failed');
-                    //get_login_page();
+                    get_login_page();
                 }
             }
         }else{

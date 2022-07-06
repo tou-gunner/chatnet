@@ -1,19 +1,19 @@
 
-    <div class="p-4">
+    <div class="p-4 mt-4">
         <div class="action-logo">
             {% if THEME == 'light' or THEME == 'default' %}
                 {% if SETTINGS.light_theme_logo %}
-                    <img class="" src="{{MEDIA_URL}}/settings/{{SETTINGS.light_theme_logo}}">
+                    <!-- <img class="" src="{{MEDIA_URL}}/settings/{{SETTINGS.light_theme_logo}}"> -->
                 {% elseif SETTINGS.logo %}
-                    <img class="" src="{{MEDIA_URL}}/settings/{{SETTINGS.logo}}">
+                    <!-- <img class="" src="{{MEDIA_URL}}/settings/{{SETTINGS.logo}}"> -->
                 {% else %}
-                    <img class="" src="{{STATIC_URL}}/img/logo.png">
+                    <!-- <img class="" src="{{STATIC_URL}}/img/logo.png"> -->
                 {% endif %}
             {% else %}
                 {% if SETTINGS.logo %}
-                    <img class="" src="{{MEDIA_URL}}/settings/{{SETTINGS.logo}}">
+                    <!-- <img class="" src="{{MEDIA_URL}}/settings/{{SETTINGS.logo}}"> -->
                 {% else %}
-                    <img class="" src="{{STATIC_URL}}/img/logo.png">
+                    <!-- <img class="" src="{{STATIC_URL}}/img/logo.png"> -->
                 {% endif %}
             {% endif %}
         </div>
@@ -41,7 +41,7 @@
         {% else %}
 
             {% if SETTINGS.guest_mode %}
-            <ul class="nav nav-pills nav-fill nav-member" role="tablist">
+            <!-- <ul class="nav nav-pills nav-fill nav-member" role="tablist">
                 <li class="nav-item">
 
                     <a class="nav-link active" id="member-tab" data-toggle="tab" href="#member" role="tab" aria-controls="member" aria-selected="true">
@@ -55,56 +55,112 @@
                         {{_("Guest")}}
                     </a>
                 </li>
-            </ul>
+            </ul> -->
             {% endif %}
 
             {% if SETTINGS.guest_mode %}
-            <div class="tab-content">
+            <!-- <div class="tab-content">
                 <div class="tab-pane fade show active" id="member" role="tabpanel" aria-labelledby="member-tab">
-                    <div class="mt-4">
+                    <div class="mt-4"> -->
             {% endif %}
-                        <form class="user" method="POST" id="login-form-member" action="{{ url('login') }}?next={{next_url}}">
-                            {{ csrf_token()|raw }}
-                            <div class="form-group">
-                                <input type="text" name="email" required="required" class="form-control form-control-user" id="email" placeholder="{{ _('Email or Username') }}">
+                        <!-- <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="nav-login-email-tab" data-toggle="tab" href="#login-email" role="tab" aria-controls="login-email" aria-selected="true">Password</a>
+                                <a class="nav-item nav-link" id="nav-login-phone-tab" data-toggle="tab" href="#login-phone" role="tab" aria-controls="login-phone" aria-selected="false">SMS<a>
                             </div>
-                            <div class="form-group">
-                                <input type="password" name="password" required="required" autocomplete="false" class="form-control form-control-user" id="password" placeholder="{{ _('Password') }}">
-                            </div>
-                            <!-- reCpatcha -->
-                            {% if SETTINGS.recaptcha_version == 2 %}
-                            <div class="g-recaptcha" data-sitekey="{{SETTINGS.recaptcha_sitekey}}"></div>
-                            {% endif %}
-                            {% if SETTINGS.recaptcha_version == 3 %}
-                            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-                            {% endif %}
-                            <!-- /reCpatcha -->
-                            <button id="main-login" type="submit" class="btn btn-primary btn-user btn-block">
-                                {{_("Login")}}
-                            </button>
-
-
-                            {% if SETTINGS.enable_social_login %}
-
-                            <div class="social-seperator">
-                                <hr>
-                                <div class="">{{_("Or Sign in With")}}</div>
-                            </div>
-                            <div class="social-login-container">
-                                {% for hybridauth_provider in hybridauth_providers %}
-                                    <div class="social-provider">
-                                        <a title="Sign in with {{hybridauth_provider}}" href="{{ url('sociallogin-callback') }}?provider={{hybridauth_provider}}">
-                                            <img src="{{STATIC_URL}}/img/auth_icons/{{hybridauth_provider}}.png" alt="">
-                                        </a>
+                        </nav> -->
+                        <div class="tab-content" id="nav-tabContent">
+                            <!-- <div class="tab-pane fade show active" id="login-email" role="tabpanel" aria-labelledby="nav-login-email-tab">
+                                <form class="user" method="POST" id="login-form-member" action="{{ url('login') }}?next={{next_url}}">
+                                    <input type="hidden" id="loginmethod" name="loginmethod" value="email" />
+                                    {{ csrf_token()|raw }}
+                                    <div class="form-group">
+                                        <input type="text" name="email" required="required" class="form-control form-control-user" id="email" placeholder="{{ _('Phone Number or Username') }}">
                                     </div>
-                                {% endfor %}
+                                    <div class="form-group">
+                                        <input type="password" name="password" required="required" autocomplete="false" class="form-control form-control-user" id="password" placeholder="{{ _('Password') }}">
+                                    </div>
+                                    {% if SETTINGS.recaptcha_version == 2 %}
+                                    <div class="g-recaptcha" data-sitekey="{{SETTINGS.recaptcha_sitekey}}"></div>
+                                    {% endif %}
+                                    {% if SETTINGS.recaptcha_version == 3 %}
+                                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+                                    {% endif %}
+                                    <button id="main-login" type="submit" class="btn btn-primary btn-user btn-block">
+                                        {{_("Login")}}
+                                    </button>
+        
+        
+                                    {% if SETTINGS.enable_social_login %}
+        
+                                    <div class="social-seperator">
+                                        <hr>
+                                        <div class="">{{_("Or Sign in With")}}</div>
+                                    </div>
+                                    <div class="social-login-container">
+                                        {% for hybridauth_provider in hybridauth_providers %}
+                                            <div class="social-provider">
+                                                <a title="Sign in with {{hybridauth_provider}}" href="{{ url('sociallogin-callback') }}?provider={{hybridauth_provider}}">
+                                                    <img src="{{STATIC_URL}}/img/auth_icons/{{hybridauth_provider}}.png" alt="">
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+        
+                                    {% endif %}
+        
+                                </form>
+                            </div> -->
+                            <div class="tab-pane fade show active" id="login-phone" role="tabpanel" aria-labelledby="nav-login-phone-tab">
+                                <form class="user" method="POST" id="login-form-member" action="{{ url('login') }}?next={{next_url}}">
+                                    <input type="hidden" id="loginmethod" name="loginmethod" value="phone" />
+                                    {{ csrf_token()|raw }}
+                                    <div class="input-group mb-3">
+                                        <input type="text" name="phone" required="required" class="form-control form-control-user" id="phone" placeholder="{{ _('Phone Number') }}" aria-label="Phone Number">
+                                        <div class="input-group-append">
+                                          <button type="button" class="btn btn-outline-primary" id="get-otp">Get Otp</button>
+                                          <span class="input-group-text" id="otp-countdown" style="display: none"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" name="otp" required="required" autocomplete="false" class="form-control form-control-user" id="otp" placeholder="{{ _('OTP') }}">
+                                    </div>
+                                    {% if SETTINGS.recaptcha_version == 2 %}
+                                    <div class="g-recaptcha" data-sitekey="{{SETTINGS.recaptcha_sitekey}}"></div>
+                                    {% endif %}
+                                    {% if SETTINGS.recaptcha_version == 3 %}
+                                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+                                    {% endif %}
+                                    <button id="main-login" type="submit" class="btn btn-primary btn-user btn-block">
+                                        {{_("Login")}}
+                                    </button>
+        
+        
+                                    {% if SETTINGS.enable_social_login %}
+<!--         
+                                    <div class="social-seperator">
+                                        <hr>
+                                        <div class="">{{_("Or Sign in With")}}</div>
+                                    </div>
+                                    <div class="social-login-container">
+                                        {% for hybridauth_provider in hybridauth_providers %}
+                                            <div class="social-provider">
+                                                <a title="Sign in with {{hybridauth_provider}}" href="{{ url('sociallogin-callback') }}?provider={{hybridauth_provider}}">
+                                                    <img src="{{STATIC_URL}}/img/auth_icons/{{hybridauth_provider}}.png" alt="">
+                                                </a>
+                                            </div>
+                                        {% endfor %}
+                                    </div> -->
+        
+                                    {% endif %}
+        
+                                </form>
                             </div>
+                        </div>
+                        <p id="error-text" class="text-danger text-center"></p>
 
-                            {% endif %}
-
-                        </form>
             {% if SETTINGS.guest_mode %}
-                    </div>
+                    <!-- </div>
                 </div>
                 <div class="tab-pane fade" id="guest" role="tabpanel" aria-labelledby="guest-tab">
                     <div class="mt-4">
@@ -161,14 +217,12 @@
 
                             <input type="hidden" name="timezone" id="auto-timezone">
 
-                            <!-- reCpatcha -->
                             {% if SETTINGS.recaptcha_version == 2 %}
                             <div class="g-recaptcha" data-sitekey="{{SETTINGS.recaptcha_sitekey}}"></div>
                             {% endif %}
                             {% if SETTINGS.recaptcha_version == 3 %}
                             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
                             {% endif %}
-                            <!-- /reCpatcha -->
                             <input type="hidden" value="{{guest_data.guest_username}}" name="guest_username" readonly class="form-control" >
                             <button type="submit" class="btn btn-primary btn-user btn-block">
                                 {{_("Login")}}
@@ -176,7 +230,7 @@
                         </form>
                     </div>
                 </div>
-            </div>
+            </div> -->
             {% endif %}
 
             <hr>
@@ -184,10 +238,28 @@
                 {% if SETTINGS.member_registration == "1" %}
                     <a class="small" href="{{ url('register') }}"><i class="fa fa-user-plus "></i>  {{_("Create an Account!")}}</a>
                 {% endif %}
-                <a class="small" href="{{ url('forgot-password') }}"><i class="fa fa-user-injured ml-2"></i>  {{_("Forgot Password?")}}</a>
-                <a class="small" href="{{ url('index') }}"><i class="fa fa-home ml-2"></i>  {{_("Home")}}</a>
+                <!-- <a class="small" href="{{ url('forgot-password') }}"><i class="fa fa-user-injured ml-2"></i>  {{_("Forgot Password?")}}</a> -->
+                <!-- <a class="small" href="{{ url('index') }}"><i class="fa fa-home ml-2"></i>  {{_("Home")}}</a> -->
             </div>
         {% endif %}
 
-
     </div>
+
+    <div id="get-otp-modal" class="modal fade">
+        <div class="modal-dialog modal-confirm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="icon-box">
+                        <i class="material-icons">&#xE876;</i>
+                    </div>				
+                    <!-- <h4 class="modal-title">Sent!</h4>	 -->
+                </div>
+                <div class="modal-body">
+                    <p class="text-center">Opt has been sent to <span id="get-otp-modal-phone"></span>. Please check you mobile phone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-block" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>     

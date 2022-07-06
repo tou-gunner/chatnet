@@ -4,85 +4,30 @@
 
 class Auth
 {
+
     function __construct() {
         if (isset($_COOKIE['cn_auth_key']) && !isset($_SESSION['user'])) {
-            // try {
-            //     app('db')->where('auth_key', $_COOKIE['cn_auth_key']);
-            //     $user = app('db')->getOne('users');
-            //     if ($user) {
-            //         $passwprd_verify = password_verify($user['password'], $_COOKIE['cn_auth_key']);
-            //         if ($passwprd_verify) {
-            //             $this->updateLastLogin($user['id']);
-                        
-            //             $_SESSION['user'] = $this->user($user['id']);
-            //             if(DISABLE_MULTIPLE_SESSIONS){
-            //                 $auth_key = password_hash($user['password'], PASSWORD_DEFAULT);
-            //                 $data = array();
-            //                 $data['auth_key'] = $auth_key;
-            //                 app('db')->where('id', $user['id']);
-            //                 app('db')->update('users', $data);
-            //                 cn_setcookie('cn_auth_key', $auth_key, time() + (86400 * 30), "/");
-            //             }
-            //         }
-            //     }
-            // }catch(Exception $e){
-            //     //pass
-            // }
-
             try {
-                $user = $this->verify_token($_COOKIE['cn_auth_key']);
+                app('db')->where('auth_key', $_COOKIE['cn_auth_key']);
+                $user = app('db')->getOne('users');
                 if ($user) {
-                    app('db')->where('id', $user['member_id']);
-                    $user_data = app('db')->getOne('user_extend');
-                    $user = array_merge($user, $user_data);
-                    $user['avatar_url'] = getUserAvatarURL($user);
-                    $this->updateLastLogin($user['member_id']);
-                    $_SESSION['user'] = $user;
-                    if(DISABLE_MULTIPLE_SESSIONS){
-                        $auth_key = $_COOKIE['cn_auth_key'];
-                        cn_setcookie('cn_auth_key', $auth_key, time() + (86400 * 30), "/");
+                    $passwprd_verify = password_verify($user['password'], $_COOKIE['cn_auth_key']);
+                    if ($passwprd_verify) {
+                        $this->updateLastLogin($user['id']);
+                        
+                        $_SESSION['user'] = $this->user($user['id']);
+                        if(DISABLE_MULTIPLE_SESSIONS){
+                            $auth_key = password_hash($user['password'], PASSWORD_DEFAULT);
+                            $data = array();
+                            $data['auth_key'] = $auth_key;
+                            app('db')->where('id', $user['id']);
+                            app('db')->update('users', $data);
+                            cn_setcookie('cn_auth_key', $auth_key, time() + (86400 * 30), "/");
+                        }
                     }
                 }
-            } catch (\Throwable $th) {
-                //throw $th;
-            }
-        }
-    }
-
-    private function verify_token($token) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=verify_token");
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 
-            http_build_query(array('accessToken' => "$token")));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $server_output = json_decode(curl_exec($ch), true);
-        curl_close ($ch);
-        if ($server_output) {
-            if ($server_output['code'] == 200) {
-                $user = $server_output['datas'];
-                return $user;
-            } else {
-                return null;
-            }
-        }
-    }
-
-    public function get_member($id) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=get_member");
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 
-            http_build_query(array('id' => "$id")));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $server_output = json_decode(curl_exec($ch), true);
-        curl_close ($ch);
-        if ($server_output) {
-            if ($server_output['code'] == 200) {
-                $user = $server_output['datas'];
-                return $user;
-            } else {
-
+            }catch(Exception $e){
+                //pass
             }
         }
     }
@@ -95,146 +40,6 @@ class Auth
         } else {
             return false;
         }
-    }
-
-    public function get_otp($phone) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=get_otp");
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 
-                 http_build_query(array('phoneNumber' => "$phone")));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $output = curl_exec($ch);
-        curl_close ($ch);
-        if ($output == "OK") {
-            if ($output['code'] == 200) {
-                return true;
-            } else {
-                app('msg')->error(__('Phone is invalid!'));
-            }
-        }
-    }
-
-    public function password_authenticate($phone, $password)
-    {
-        $ch_verifyOtp = curl_init();
-        curl_setopt($ch_verifyOtp, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=login");
-        curl_setopt($ch_verifyOtp, CURLOPT_POST, 1);
-        curl_setopt($ch_verifyOtp, CURLOPT_POSTFIELDS, 
-                 http_build_query(array(
-                    'phoneNumber' => "$phone", 
-                    'password' => "$password"
-                ))
-            );
-        curl_setopt($ch_verifyOtp, CURLOPT_RETURNTRANSFER, true);
-        $otpOutput = json_decode(curl_exec($ch_verifyOtp), true);
-        curl_close($ch_verifyOtp);
-        if ($otpOutput && $otpOutput['code'] == 200) {
-            $token = $otpOutput['datas'];
-            $ch_verifyToken = curl_init();
-            curl_setopt($ch_verifyToken, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=verify_token");
-            curl_setopt($ch_verifyToken, CURLOPT_POST, 1);
-            curl_setopt($ch_verifyToken, CURLOPT_POSTFIELDS, 
-                     http_build_query(array(
-                        'accessToken' => "$token"
-                    ))
-                );
-            curl_setopt($ch_verifyToken, CURLOPT_RETURNTRANSFER, true);
-            $member_output = json_decode(curl_exec($ch_verifyToken), true);
-            curl_close($ch_verifyToken);
-            if ($member_output['code'] == 200) {
-                $user = $member_output['datas'];
-    
-                app('db')->where('id', $user['member_id']);
-                $user_data = app('db')->getOne('user_extend');
-                if ($user_data == null) {
-                    $user_data = array();
-                    $user_data['id'] = $user['member_id'];
-                    $user_data['user_type'] = 2;
-                    $user_data['user_status'] = 1;
-                    $user_data['available_status'] = 1;
-                    $user_data['timezone'] = SETTINGS['timezone'];
-                    app('db')->insert('user_extend', $user_data);
-                }
-                $user = array_merge($user, $user_data);
-                $user['avatar_url'] = getUserAvatarURL($user);
-                
-                $_SESSION['user'] = $user;
-                cn_setcookie('cn_auth_key', $token, time() + (86400 * 30), "/");
-                return $user;
-            }
-            return null;
-        }
-        return null;
-        // Further processing ...
-        // if ($server_output == "OK") {
-        //     if ($server_output['code'] == 200) {
-        //         return true;
-        //     } else {
-        //         app('msg')->error(__('Phone is invalid!'));
-        //     }
-        // }
-    }
-
-    public function phone_authenticate($phone, $otp)
-    {
-        $ch_verifyOtp = curl_init();
-        curl_setopt($ch_verifyOtp, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=verify_otp");
-        curl_setopt($ch_verifyOtp, CURLOPT_POST, 1);
-        curl_setopt($ch_verifyOtp, CURLOPT_POSTFIELDS, 
-                 http_build_query(array(
-                    'phoneNumber' => "$phone", 
-                    'otp' => "$otp"
-                ))
-            );
-        curl_setopt($ch_verifyOtp, CURLOPT_RETURNTRANSFER, true);
-        $otpOutput = json_decode(curl_exec($ch_verifyOtp), true);
-        curl_close($ch_verifyOtp);
-        if ($otpOutput && $otpOutput['code'] == 200) {
-            $token = $otpOutput['datas']['token'];
-            $ch_verifyToken = curl_init();
-            curl_setopt($ch_verifyToken, CURLOPT_URL,"https://alomall.la/demo/api/mobile/index.php?w=authentication&t=verify_token");
-            curl_setopt($ch_verifyToken, CURLOPT_POST, 1);
-            curl_setopt($ch_verifyToken, CURLOPT_POSTFIELDS, 
-                     http_build_query(array(
-                        'accessToken' => "$token"
-                    ))
-                );
-            curl_setopt($ch_verifyToken, CURLOPT_RETURNTRANSFER, true);
-            $member_output = json_decode(curl_exec($ch_verifyToken), true);
-            curl_close($ch_verifyToken);
-            if ($member_output['code'] == 200) {
-                $user = $member_output['datas'];
-    
-                app('db')->where('id', $user['member_id']);
-                $user_data = app('db')->getOne('user_extend');
-                if ($user_data == null) {
-                    $user_data = array();
-                    $user_data['id'] = $user['member_id'];
-                    $user_data['user_type'] = 2;
-                    $user_data['user_status'] = 1;
-                    $user_data['available_status'] = 1;
-                    $user_data['timezone'] = SETTINGS['timezone'];
-                    app('db')->insert('user_extend', $user_data);
-                }
-                $user = array_merge($user, $user_data);
-                $user['avatar_url'] = getUserAvatarURL($user);
-                
-                $_SESSION['user'] = $user;
-                cn_setcookie('cn_auth_key', $token, time() + (86400 * 30), "/");
-                return $user;
-            }
-            return null;
-        }
-        return null;
-        // Further processing ...
-        // if ($server_output == "OK") {
-        //     if ($server_output['code'] == 200) {
-        //         return true;
-        //     } else {
-        //         app('msg')->error(__('Phone is invalid!'));
-        //     }
-        // }
     }
 
     // Log in user by email and password
@@ -484,80 +289,30 @@ class Auth
         }
     }
 
-    // public function get_user_by_id($id){
-    //     if ($id) {
-
-    //         app('db')->where('id', $id);
-    //         $user_data = app('db')->getOne('users');
-
-    //         $user_data['avatar_url'] = getUserAvatarURL($user_data);
-
-    //         $user_data['user_status_class'] = "";
-    //         if ($user_data['user_status'] == 1) {
-    //             $user_data['user_status_class'] = "online";
-    //         } elseif ($user_data['user_status'] == 2) {
-    //             $user_data['user_status_class'] = "offline";
-    //         } elseif ($user_data['user_status'] == 3) {
-    //             $user_data['user_status_class'] = "busy";
-    //         } elseif ($user_data['user_status'] == 4) {
-    //             $user_data['user_status_class'] = "away";
-    //         }
-    //         return $user_data;
-
-    //     }
-    // }
-
-    // Get user data
-    // public function user($id = false)
-    // {
-    //     if ($id) {
-    //         return $this->get_user_by_id($id);
-    //     } else {
-    //         if (isset($_SESSION['user'])) {
-    //             if(isset($_GET['view-as']) && $_SESSION['user']['user_type'] == 1){
-    //                 return $_SESSION['view-as'];
-    //             }else{
-    //                 return $_SESSION['user'];
-    //             }
-    //         } else {
-    //             $nouser = array(
-    //                 'id' => 0,
-    //                 'timezone' => SETTINGS['timezone'],
-    //                 'user_type' => 0,
-    //             );
-    //             return $nouser;
-    //         }
-
-    //     }
-    // }
-
     public function get_user_by_id($id){
         if ($id) {
-            $user = $this->get_member($id);
-            if (!isset($user['member_id'])) {
-                return null;
-            }
 
             app('db')->where('id', $id);
-            $user_data = app('db')->getOne('user_extend');
+            $user_data = app('db')->getOne('users');
 
-            $user = array_merge($user, $user_data);
-            $user['avatar_url'] = getUserAvatarURL($user);
-            $user['user_status_class'] = "";
-            if ($user['user_status'] == 1) {
-                $user['user_status_class'] = "online";
-            } elseif ($user['user_status'] == 2) {
-                $user['user_status_class'] = "offline";
-            } elseif ($user['user_status'] == 3) {
-                $user['user_status_class'] = "busy";
-            } elseif ($user['user_status'] == 4) {
-                $user['user_status_class'] = "away";
+            $user_data['avatar_url'] = getUserAvatarURL($user_data);
+
+            $user_data['user_status_class'] = "";
+            if ($user_data['user_status'] == 1) {
+                $user_data['user_status_class'] = "online";
+            } elseif ($user_data['user_status'] == 2) {
+                $user_data['user_status_class'] = "offline";
+            } elseif ($user_data['user_status'] == 3) {
+                $user_data['user_status_class'] = "busy";
+            } elseif ($user_data['user_status'] == 4) {
+                $user_data['user_status_class'] = "away";
             }
-            return $user;
+            return $user_data;
 
         }
     }
 
+    // Get user data
     public function user($id = false)
     {
         if ($id) {

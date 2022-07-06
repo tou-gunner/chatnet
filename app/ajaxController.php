@@ -365,14 +365,9 @@ class ajaxController{
             app('db')->join("private_chat_meta pc", "pc.to_user=u.id AND pc.id = $private_min_pc_Q AND pc.from_user=".app('auth')->user()['id'], "LEFT");
             app('db')->join("private_chat_meta pcr", "pcr.from_user=u.id AND pcr.id = $private_min_pcr_Q AND pcr.to_user=".app('auth')->user()['id'], "LEFT");
             app('db')->where('u.id', $post_data['active_user']);
-            // $cols = Array("u.id, u.first_name, u.last_name, u.user_name, u.sex, u.user_type, u.country, u.avatar, u.dob, u.about, u.available_status, 
-            //     pc.is_favourite, pc.is_muted, pc.is_blocked as blocked_by_you, pcr.is_blocked as blocked_by_him");
-            //$user_data = app('db')->getOne('users u', $cols);
-            $cols = Array("u.user_type, u.country, u.about, u.available_status, 
+            $cols = Array("u.id, u.first_name, u.last_name, u.user_name, u.sex, u.user_type, u.country, u.avatar, u.dob, u.about, u.available_status, 
                 pc.is_favourite, pc.is_muted, pc.is_blocked as blocked_by_you, pcr.is_blocked as blocked_by_him");
-            $user_data = app('db')->getOne('user_extend u', $cols);
-            $user = app('auth')->get_member($post_data['active_user']);
-            $user_data = array_merge($user, $user_data);
+            $user_data = app('db')->getOne('users u', $cols);
             $user_data['avatar_url'] = getUserAvatarURL($user_data);
             $data['info_type'] = "user";
             $data['info'] = $user_data;
@@ -410,8 +405,7 @@ class ajaxController{
             $data['info_type'] = "group";
             $data['info'] = $group_data;
 
-            //app('db')->join("users u", "g.user=u.id", "LEFT");
-            app('db')->join("user_extend u", "g.user=u.id", "LEFT");
+            app('db')->join("users u", "g.user=u.id", "LEFT");
             app('db')->where ('g.chat_group', $post_data['active_group']);
             app('db')->where ('u.user_type', Array(1, 4, 2), 'IN');
             app('db')->where ('u.available_status', 1);
@@ -419,15 +413,8 @@ class ajaxController{
             app('db')->orderBy('u.id', 'DESC', array($group_data['created_by']));
             app('db')->orderBy('u.user_type', 'ASC', array(1, 4, 2));
             app('db')->orderBy("u.last_seen","DESC");
-            $group_users = app('db')->get('group_users g', array(0,20), 'g.*, u.id, u.user_type, u.country');
-
-            //$data['group_users'] = $group_users;
-
-            $data['group_users'] = array();
-            foreach ($group_users as $group_user) {
-                $user = app('auth')->get_member($group_user['id']);
-                array_push($data['group_users'], array_merge($user, $group_user));
-            }
+            $group_users = app('db')->get('group_users g', array(0,20), 'g.*, u.id, u.first_name, u.last_name, u.user_name, u.sex, u.user_type, u.country, u.avatar');
+            $data['group_users'] = $group_users;
         }
         $data['shared_photos'] = app('chat')->getSharedData(app('auth')->user()['id'], 2, 8, $post_data['active_user'], $post_data['active_group'], $post_data['active_room']);
         $data['shared_files'] = app('chat')->getSharedData(app('auth')->user()['id'], 6, 5, $post_data['active_user'], $post_data['active_group'], $post_data['active_room']);
@@ -1571,7 +1558,7 @@ class ajaxController{
     // delete chatroom
     public function delete_chatroom(){
         $post_data = app('request')->body;
-        $privilege_room_user = app('admin')->checkUserRoomPrivilege(app('auth')->user()['member_id'], $post_data['room_id']);
+        $privilege_room_user = app('admin')->checkUserRoomPrivilege(app('auth')->user()['id'], $post_data['room_id']);
         if($privilege_room_user){
             if (isset(SETTINGS['unlink_with_delete']) && SETTINGS['unlink_with_delete'] == true) {
                 //unlink cover image
